@@ -17,9 +17,9 @@ export function RelationshipsQuestion({ topic, value, onChange, onContinue, onBa
     <article className={`topic topic--${topic.id} ${topic.layout} paper-reveal relationships-question`}>
       <div className="topic__number">02</div>
       <div className="topic__copy">
-        <span className="kicker">02 · MỐI QUAN HỆ</span>
+        <span className="kicker">{topic.eyebrow}</span>
         <h3>{question?.content ?? topic.title}</h3>
-        <p>Chọn một khoảnh khắc bạn muốn có thêm trong năm 2027.</p>
+        <p>{topic.desc}</p>
         <div className="relationships-choice-grid" role="group" aria-label="Khoảnh khắc muốn có thêm">
           {options.map((option) => (
             <button

@@ -20,9 +20,9 @@ export function VibeQuestion({ topic, value, onChange, onContinue, cards, questi
     <article className={`topic ${topic.layout} paper-reveal vibe-question`}>
       <div className="topic__number">01</div>
       <div className="topic__copy">
-        <span className="kicker">01 · VIBE 2027</span>
+        <span className="kicker">{topic.eyebrow}</span>
         <h3>{question?.content ?? topic.title}</h3>
-        <p>Chọn một vibe phù hợp nhất với bạn.</p>
+        <p>{topic.desc}</p>
         {cards.map((card, index) => (
           <TiltCard
             shape="square"

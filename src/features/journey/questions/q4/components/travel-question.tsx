@@ -17,9 +17,9 @@ export function TravelQuestion({ topic, value, onChange, onContinue, onBack, dir
     <article className={`topic topic--${topic.id} ${topic.layout} paper-reveal travel-question`}>
       <div className="topic__number">04</div>
       <div className="topic__copy">
-        <span className="kicker">04 · DU LỊCH & TRẢI NGHIỆM</span>
+        <span className="kicker">{topic.eyebrow}</span>
         <h3>{question?.content ?? topic.title}</h3>
-        <p>Chọn một nơi bạn muốn đặt chân đến trong năm 2027.</p>
+        <p>{topic.desc}</p>
         <div className="travel-choice-ticket" role="group" aria-label="Điểm đến muốn khám phá">
           {options.map((option, index) => (
             <button

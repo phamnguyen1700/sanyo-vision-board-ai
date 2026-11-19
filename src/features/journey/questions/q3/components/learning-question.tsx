@@ -17,9 +17,9 @@ export function LearningQuestion({ topic, value, onChange, onContinue, onBack, d
     <article className={`topic topic--${topic.id} ${topic.layout} paper-reveal learning-question`}>
       <div className="topic__number">03</div>
       <div className="topic__copy">
-        <span className="kicker">03 · KỸ NĂNG & PHÁT TRIỂN</span>
+        <span className="kicker">{topic.eyebrow}</span>
         <h3>{question?.content ?? topic.title}</h3>
-        <p>Chọn một kỹ năng bạn muốn mở khóa trong năm 2027.</p>
+        <p>{topic.desc}</p>
         <div className="learning-choice-sheet" role="group" aria-label="Kỹ năng muốn mở khóa">
           {options.map((option) => (
             <button
