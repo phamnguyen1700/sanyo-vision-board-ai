@@ -18,11 +18,11 @@ export type JourneyScene = {
 export const journeyScenes: readonly JourneyScene[] = [
   { id: 'home', label: 'Vision Board 2027', next: 'identity', transitionToNext: 'down' },
   { id: 'identity', label: 'Về bạn', next: 'vibe', transitionToNext: 'down' },
-  { id: 'vibe', topicId: 'vibe', label: 'Vibe 2027', next: 'relationships', transitionToNext: 'down' },
-  { id: 'relationships', topicId: 'relationships', label: 'Mối quan hệ', next: 'learning', transitionToNext: 'down' },
-  { id: 'learning', topicId: 'learning', label: 'Kỹ năng', next: 'travel', transitionToNext: 'down' },
-  { id: 'travel', topicId: 'travel', label: 'Du lịch', next: 'career', transitionToNext: 'down' },
-  { id: 'career', topicId: 'career', label: 'Công việc & học tập', next: 'review', transitionToNext: 'down' },
+  { id: 'vibe', topicId: 'vibe', label: 'Vibe 2027', next: 'career', transitionToNext: 'down' },
+  { id: 'career', topicId: 'career', label: 'Công việc & học tập', next: 'relationships', transitionToNext: 'down' },
+  { id: 'relationships', topicId: 'relationships', label: 'Mối quan hệ', next: 'travel', transitionToNext: 'down' },
+  { id: 'travel', topicId: 'travel', label: 'Du lịch', next: 'learning', transitionToNext: 'down' },
+  { id: 'learning', topicId: 'learning', label: 'Kỹ năng', next: 'review', transitionToNext: 'down' },
   { id: 'review', label: 'Xem lại', next: 'result', transitionToNext: 'expand' },
   { id: 'result', label: 'Vision Board của bạn' },
 ]

@@ -42,10 +42,10 @@ function getPoolImageSource(topicId: JourneyResult['topicId'], gender: string) {
   if (!genderKey) return fallbackImageSource
 
   const imageNumberByTopic: Record<Exclude<JourneyResult['topicId'], 'vibe'>, string> = {
-    relationships: 'q2',
-    learning: 'q3',
+    career: 'q2',
+    relationships: 'q3',
     travel: 'q4',
-    career: 'q5',
+    learning: 'q5',
   }
 
   return `/image-pool-demo-v2/result-${genderKey}-${imageNumberByTopic[topicId]}.png`

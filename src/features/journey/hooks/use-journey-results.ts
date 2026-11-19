@@ -10,7 +10,7 @@ export type JourneyResult = {
   answer?: TopicAnswer
 }
 
-const journeyTopicIds: readonly TopicId[] = ['vibe', 'relationships', 'learning', 'travel', 'career']
+const journeyTopicIds: readonly TopicId[] = ['vibe', 'career', 'relationships', 'travel', 'learning']
 
 /**
  * Exposes the temporary five-question result in the same order as the journey.
