@@ -14,6 +14,9 @@ export type Identity = {
   name: string
   gender: string
   phone: string
+  privacyConsent: boolean
+  marketingConsent: boolean
+  dataUsageConsent: boolean
 }
 
 export type Session = {
@@ -21,6 +24,7 @@ export type Session = {
   vibe: string
   answers: Record<string, TopicAnswer>
   boardId: string
+  playerId?: string
   manifestPhase?: 'result'
   activeScreenId?: JourneyScreenId
   editingTopicId?: TopicId
@@ -29,7 +33,14 @@ export type Session = {
 const sessionKey = 'sanyo-vision-session'
 
 const storedSessionSchema = z.object({
-  identity: z.object({ name: z.string(), gender: z.string(), phone: z.string() }),
+  identity: z.object({
+    name: z.string(),
+    gender: z.string(),
+    phone: z.string(),
+    privacyConsent: z.boolean().default(false),
+    marketingConsent: z.boolean().default(false),
+    dataUsageConsent: z.boolean().default(false),
+  }),
   answers: z.record(z.string(), z.union([
     z.string(),
     z.array(z.string()),
@@ -37,6 +48,7 @@ const storedSessionSchema = z.object({
   ])),
   vibe: z.string(),
   boardId: z.string(),
+  playerId: z.string().optional(),
   manifestPhase: z.literal('result').optional(),
   activeScreenId: z.enum(['home', 'identity', 'vibe', 'relationships', 'learning', 'travel', 'career', 'review', 'result']).optional(),
   editingTopicId: z.enum(['vibe', 'relationships', 'learning', 'travel', 'career']).optional(),

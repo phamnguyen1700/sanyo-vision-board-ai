@@ -1,4 +1,6 @@
 export { adminAuthService } from './admin-auth.service'
+export { adminImagePoolService } from './admin-image-pool.service'
 export { adminQuestionsService } from './admin-questions.service'
 export { adminStaffService } from './admin-staff.service'
 export { adminStatsService } from './admin-stats.service'
+export { adminPlayersService } from './admin-players.service'

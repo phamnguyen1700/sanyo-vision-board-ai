@@ -6,7 +6,6 @@ import { AppProviders } from './providers'
 export const metadata: Metadata = {
   title: 'SANYO Vision Board 2027 — Cool New Me!',
   description: 'Tạo vision board 2027 mang vibe rất riêng cùng SANYO.',
-  generator: 'v0.app',
 }
 
 export const viewport: Viewport = {

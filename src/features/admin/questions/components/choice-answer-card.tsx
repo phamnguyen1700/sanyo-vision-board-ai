@@ -15,14 +15,29 @@ interface ChoiceAnswerCardProps {
 export function ChoiceAnswerCard({ answer, onChange, onDelete }: ChoiceAnswerCardProps) {
   return (
     <article className="cms-choice-answer-card">
-      <CmsField
-        id={`choice-content-${answer.id}`}
-        label="Câu trả lời"
-        value={answer.content}
-        showLabel={false}
-        showPlaceholder={false}
-        onChange={(content) => onChange({ ...answer, content })}
-      />
+      <div className="cms-choice-answer-card__fields">
+        <CmsField
+          id={`choice-content-${answer.id}`}
+          label="Câu trả lời"
+          value={answer.content}
+          showPlaceholder={false}
+          onChange={(content) => onChange({ ...answer, content })}
+        />
+        <CmsField
+          id={`choice-value-${answer.id}`}
+          label="Giá trị"
+          value={answer.value}
+          showPlaceholder={false}
+          onChange={(value) => onChange({ ...answer, value })}
+        />
+        <CmsField
+          id={`choice-prompt-hint-${answer.id}`}
+          label="Prompt hint"
+          value={answer.promptHint ?? ''}
+          showPlaceholder={false}
+          onChange={(promptHint) => onChange({ ...answer, promptHint: promptHint || null })}
+        />
+      </div>
       <Button
         type="button"
         variant="ghost"

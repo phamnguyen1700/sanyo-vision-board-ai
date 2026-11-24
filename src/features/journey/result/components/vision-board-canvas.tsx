@@ -1,18 +1,22 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { LoadingSuccessOverlay } from '@/components/common/loading-success-overlay'
 import { answerPreview } from '@/lib/vision-topics'
 import type { JourneyResult } from '../../hooks/use-journey-results'
+import type { PlayerImageGenerationStatus, PlayerImageResponse } from '@/types/player.types'
 
 type VisionBoardCanvasProps = {
   results: readonly JourneyResult[]
-  gender: string
+  images: readonly PlayerImageResponse[]
+  imageStatusByQuestionCode: Readonly<Record<string, PlayerImageGenerationStatus>>
+  imageSlotsVisible: boolean
 }
 
 const canvasWidth = 1600
 const canvasHeight = 1000
-const fallbackImageSource = '/vision-board-final-demo.png'
+const questionCodes = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'] as const
 
 function drawWrappedText(context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
   const words = text.split(' ')
@@ -33,27 +37,10 @@ function drawWrappedText(context: CanvasRenderingContext2D, text: string, x: num
   if (line) context.fillText(line, x, y + lineIndex * lineHeight)
 }
 
-function getPoolImageSource(topicId: JourneyResult['topicId'], gender: string) {
-  if (topicId === 'vibe') return '/vibe-image.png'
-
-  const normalizedGender = gender.trim().toLowerCase()
-  const genderKey = normalizedGender === 'nữ' || normalizedGender === 'female' ? 'female' : normalizedGender === 'nam' || normalizedGender === 'male' ? 'male' : null
-
-  if (!genderKey) return fallbackImageSource
-
-  const imageNumberByTopic: Record<Exclude<JourneyResult['topicId'], 'vibe'>, string> = {
-    career: 'q2',
-    relationships: 'q3',
-    travel: 'q4',
-    learning: 'q5',
-  }
-
-  return `/image-pool-demo-v2/result-${genderKey}-${imageNumberByTopic[topicId]}.png`
-}
-
-export function VisionBoardCanvas({ results, gender }: VisionBoardCanvasProps) {
+export function VisionBoardCanvas({ results, images, imageStatusByQuestionCode, imageSlotsVisible }: VisionBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imageRefs = useRef<HTMLImageElement[]>([])
+  const [imageStatuses, setImageStatuses] = useState<Array<'loading' | 'loaded' | 'error'>>(() => results.map(() => 'loading'))
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -68,10 +55,6 @@ export function VisionBoardCanvas({ results, gender }: VisionBoardCanvasProps) {
 
     const rootStyle = getComputedStyle(document.documentElement)
     const fontFamily = rootStyle.getPropertyValue('--cms-font-family').trim() || 'sans-serif'
-
-    context.fillStyle = '#7a5b00'
-    context.font = `600 18px ${fontFamily}`
-    context.fillText('DEMO · Ảnh từ model để kiểm tra chất lượng', 72, 52)
 
     const columns = 3
     const imageWidth = 440
@@ -99,33 +82,65 @@ export function VisionBoardCanvas({ results, gender }: VisionBoardCanvasProps) {
 
   useEffect(() => {
     let cancelled = false
-    const imageSources = results.map((result) => getPoolImageSource(result.topicId, gender))
-    const images = imageSources.map((source) => {
+    setImageStatuses(results.map((_, index) => imageStatusByQuestionCode[questionCodes[index]] ?? 'loading'))
+    const imageSources = results.map((_, index) => images.find((image) => image.questionCode === questionCodes[index])?.imageUrl ?? '')
+    const loadedImages = imageSources.map((source) => {
       const image = new Image()
-      image.src = source
+      if (source) {
+        image.crossOrigin = 'anonymous'
+        image.src = source
+      }
       return image
     })
 
-    Promise.all(images.map((image) => new Promise<void>((resolve) => {
-      image.onload = () => resolve()
-      image.onerror = () => resolve()
-    }))).then(() => {
-      if (cancelled) return
-      imageRefs.current = images
-      draw()
+    imageRefs.current = loadedImages
+    loadedImages.forEach((image, index) => {
+      if (!image.src) {
+        setImageStatuses((current) => current.map((status, itemIndex) => itemIndex === index
+          ? (imageStatusByQuestionCode[questionCodes[index]] === 'loading' ? 'loading' : 'error')
+          : status))
+        return
+      }
+      image.onload = () => {
+        if (cancelled) return
+        draw()
+        setImageStatuses((current) => current.map((status, itemIndex) => itemIndex === index ? 'loaded' : status))
+      }
+      image.onerror = () => {
+        if (cancelled) return
+        setImageStatuses((current) => current.map((status, itemIndex) => itemIndex === index ? 'error' : status))
+      }
     })
 
     return () => {
       cancelled = true
       imageRefs.current = []
     }
-  }, [draw, gender])
+  }, [draw, imageStatusByQuestionCode, images, results])
 
   useEffect(() => {
     draw()
   }, [draw])
 
-  return <canvas ref={canvasRef} className="vision-result__image vision-result__canvas" width={canvasWidth} height={canvasHeight} aria-label="Vision Board 2027" />
+  return (
+    <div className="vision-result__canvas-wrap">
+      <canvas ref={canvasRef} className="vision-result__image vision-result__canvas" width={canvasWidth} height={canvasHeight} aria-label="Vision Board 2027" />
+      {imageSlotsVisible && (
+        <div className="vision-result__image-loading-grid" aria-live="polite">
+          {results.map((_, index) => (
+            <div key={`loading-${index}`} className="vision-result__image-loading" data-status={imageStatuses[index]} aria-label={imageStatuses[index] === 'loading' ? `Đang tải ảnh ${index + 1}` : undefined}>
+              {imageStatuses[index] === 'loading' && (
+                <LoadingSuccessOverlay
+                  status="loading"
+                  label={`Đang tải ảnh ${index + 1}`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function downloadVisionBoard(canvas: HTMLCanvasElement | null) {

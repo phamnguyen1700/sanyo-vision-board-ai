@@ -20,16 +20,23 @@ type IdentityFormProps = {
   direction?: SceneTransition
 }
 
+type IdentityFormValues = Pick<Identity, 'name' | 'gender' | 'phone'>
+
 export const IdentityForm = forwardRef<IdentityFormHandle, IdentityFormProps>(function IdentityForm({ onSubmit, onDraftChange, defaultValues, direction }, ref) {
   const formRef = useRef<HTMLFormElement>(null)
-  const [consents, setConsents] = useState<ConsentValues>({ privacy: false, marketing: false, research: false })
+  const [consents, setConsents] = useState<ConsentValues>({
+    privacy: defaultValues.privacyConsent,
+    marketing: defaultValues.marketingConsent,
+    research: defaultValues.dataUsageConsent,
+  })
   const [showConsentError, setShowConsentError] = useState(false)
   const {
     register,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
-  } = useForm<Identity>({
+  } = useForm<IdentityFormValues>({
     resolver: zodResolver(identitySchema),
     defaultValues,
   })
@@ -39,9 +46,16 @@ export const IdentityForm = forwardRef<IdentityFormHandle, IdentityFormProps>(fu
   }))
 
   useEffect(() => {
-    const subscription = watch((value) => onDraftChange({ name: value.name || '', gender: value.gender || '', phone: value.phone || '' }))
+    const subscription = watch((value) => onDraftChange({
+      name: value.name || '',
+      gender: value.gender || '',
+      phone: value.phone || '',
+      privacyConsent: consents.privacy,
+      marketingConsent: consents.marketing,
+      dataUsageConsent: consents.research,
+    }))
     return () => subscription.unsubscribe()
-  }, [watch, onDraftChange])
+  }, [watch, onDraftChange, consents])
 
   return (
     <div className="identity-form-shell">
@@ -54,7 +68,12 @@ export const IdentityForm = forwardRef<IdentityFormHandle, IdentityFormProps>(fu
             return
           }
           setShowConsentError(false)
-          onSubmit(identity)
+          onSubmit({
+            ...identity,
+            privacyConsent: consents.privacy,
+            marketingConsent: consents.marketing,
+            dataUsageConsent: consents.research,
+          })
         })}
       >
         <div className="question-heading">
@@ -100,6 +119,15 @@ export const IdentityForm = forwardRef<IdentityFormHandle, IdentityFormProps>(fu
         value={consents}
         onChange={(next) => {
           setConsents(next)
+          const identity = getValues()
+          onDraftChange({
+            name: identity.name || '',
+            gender: identity.gender || '',
+            phone: identity.phone || '',
+            privacyConsent: next.privacy,
+            marketingConsent: next.marketing,
+            dataUsageConsent: next.research,
+          })
           if (next.privacy) setShowConsentError(false)
         }}
         showRequiredError={showConsentError}

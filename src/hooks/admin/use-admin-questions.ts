@@ -89,3 +89,30 @@ export function useDeleteAdminQuestionAnswer() {
     onError: cmsToast.apiError,
   })
 }
+
+export function useUploadAdminQuestionAnswerImage() {
+  return useMutation({
+    mutationFn: async ({
+      questionId,
+      answerId,
+      file,
+    }: {
+      questionId: string
+      answerId: string
+      file: File
+    }) => {
+      const presigned = await adminQuestionsService.presignAnswerImage(
+        questionId,
+        answerId,
+        {
+          filename: file.name,
+          contentType: file.type,
+          fileSizeBytes: file.size,
+        },
+      )
+      await adminQuestionsService.uploadToR2(presigned, file)
+      return presigned
+    },
+    onError: cmsToast.apiError,
+  })
+}

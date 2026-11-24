@@ -6,7 +6,9 @@ export interface AdminQuestionAnswer {
   code: string
   content: string
   value: string
+  promptHint: string | null
   imageUrl: string | null
+  imageKey: string | null
   sortOrder: number
 }
 
@@ -41,6 +43,7 @@ export interface CreateAdminQuestionAnswerInput {
   code: string
   content: string
   value: string
+  promptHint?: string | null
   imageUrl?: string | null
   sortOrder: number
 }
@@ -48,6 +51,23 @@ export interface CreateAdminQuestionAnswerInput {
 export interface UpdateAdminQuestionAnswerInput {
   content?: string
   value?: string
+  promptHint?: string | null
   imageUrl?: string | null
+  imageKey?: string | null
   sortOrder?: number
+}
+
+export interface PresignAdminQuestionImageInput {
+  filename: string
+  contentType: string
+  fileSizeBytes?: number
+}
+
+export interface PresignAdminQuestionImageResponse {
+  uploadUrl: string
+  objectKey: string
+  publicUrl: string
+  method: 'PUT'
+  headers: Record<string, string>
+  expiresIn: number
 }

@@ -7,6 +7,8 @@ import type {
   CreateAdminQuestionAnswerInput,
   UpdateAdminQuestionAnswerInput,
   UpdateAdminQuestionInput,
+  PresignAdminQuestionImageInput,
+  PresignAdminQuestionImageResponse,
 } from '@/types/admin-question.types'
 
 function toQueryString(query: AdminQuestionListQuery = {}) {
@@ -60,5 +62,25 @@ export const adminQuestionsService = {
   },
   deleteAnswer: async (questionId: string, answerId: string) => {
     await apiClient.delete(endpoints.questions.answer(questionId, answerId))
+  },
+  presignAnswerImage: async (
+    questionId: string,
+    answerId: string,
+    body: PresignAdminQuestionImageInput,
+  ) => {
+    const response = await apiClient.post<PresignAdminQuestionImageResponse>(
+      endpoints.questions.presignImage(questionId, answerId),
+      body,
+    )
+    return response.data
+  },
+  uploadToR2: async (presigned: PresignAdminQuestionImageResponse, file: File) => {
+    const response = await fetch(presigned.uploadUrl, {
+      method: presigned.method,
+      headers: presigned.headers,
+      body: file,
+    })
+
+    if (!response.ok) throw new Error('Không thể tải ảnh lên kho lưu trữ.')
   },
 }

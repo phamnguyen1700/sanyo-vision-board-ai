@@ -83,23 +83,5 @@ export function getResumeScreen(route: readonly JourneyScene[], session: Session
 }
 
 export function isTopicAnswerValid(topicId: TopicId, value: TopicAnswer | undefined) {
-  const topic = topics.find((item) => item.id === topicId)!
-  if (topicId === 'vibe') return typeof value === 'string' && value.trim().length > 0
-  if (topicId === 'relationships') {
-    return typeof value === 'string' && value.trim().length > 0
-  }
-  if (topicId === 'learning') {
-    return typeof value === 'string' && value.trim().length > 0
-  }
-  if (topicId === 'travel') {
-    return typeof value === 'string' && value.trim().length > 0
-  }
-  if (topicId === 'career') {
-    return typeof value === 'string' && value.trim().length > 0
-  }
-  if (topic.kind === 'multi') {
-    return Array.isArray(value) && value.length >= 3 && value.length <= 5 &&
-      new Set(value).size === value.length && value.every((item) => (topic.options as readonly string[]).includes(item))
-  }
-  return Array.isArray(value) && value.slice(0, 3).filter((line) => line.trim()).length === 3
+  return typeof value === 'string' ? value.trim().length > 0 : Array.isArray(value) && value.length > 0
 }

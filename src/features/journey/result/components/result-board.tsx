@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@/lib/vision-session'
 import { TiltCard } from '@/components/motion/tilt-card'
 import type { JourneyResult } from '../../hooks/use-journey-results'
+import type { PlayerImageGenerationStatus, PlayerResponse } from '@/types/player.types'
 import { downloadVisionBoard, VisionBoardCanvas } from './vision-board-canvas'
 
 type ResultBoardProps = {
@@ -12,9 +13,12 @@ type ResultBoardProps = {
   results: readonly JourneyResult[]
   onReplay?: () => void
   onBackToReview?: () => void
+  player: PlayerResponse | null
+  imageStatusByQuestionCode: Readonly<Record<string, PlayerImageGenerationStatus>>
+  imageSlotsVisible: boolean
 }
 
-export function ResultBoard({ session, results, onReplay, onBackToReview }: ResultBoardProps) {
+export function ResultBoard({ session, results, onReplay, onBackToReview, player, imageStatusByQuestionCode, imageSlotsVisible }: ResultBoardProps) {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -57,7 +61,12 @@ export function ResultBoard({ session, results, onReplay, onBackToReview }: Resu
       <section className="vision-result" aria-label={`Vision Board 2027 của ${session.identity.name}`}>
       <figure className="vision-result__design">
         <TiltCard className="vision-result__tilt">
-          <VisionBoardCanvas results={results} gender={session.identity.gender} />
+          <VisionBoardCanvas
+            results={results}
+            images={player?.images ?? []}
+            imageStatusByQuestionCode={imageStatusByQuestionCode}
+            imageSlotsVisible={imageSlotsVisible}
+          />
         </TiltCard>
       </figure>
       <div className="vision-result__actions">

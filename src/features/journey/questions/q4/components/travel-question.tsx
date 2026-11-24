@@ -9,16 +9,17 @@ type TravelQuestionProps = TopicSectionProps & {
   options: readonly string[]
 }
 
-export function TravelQuestion({ topic, value, onChange, onContinue, onBack, direction, editing, options, question }: TravelQuestionProps) {
+export function TravelQuestion({ topic, index, value, onChange, onContinue, onBack, direction, editing, options, question }: TravelQuestionProps) {
   const selected = typeof value === 'string' ? value : ''
   const [customOpen, setCustomOpen] = useState(() => selected.length > 0 && !options.includes(selected))
+  const allowCustomAnswer = question?.allowCustomAnswer ?? true
 
   return (
     <article className={`topic topic--${topic.id} ${topic.layout} paper-reveal travel-question`}>
-      <div className="topic__number">04</div>
+      <div className="topic__number">{String(index + 1).padStart(2, '0')}</div>
       <div className="topic__copy">
         <span className="kicker">{topic.eyebrow}</span>
-        <h3>{question?.content ?? topic.title}</h3>
+        <h3>{question?.content}</h3>
         <p>{topic.desc}</p>
         <div className="travel-choice-ticket" role="group" aria-label="Điểm đến muốn khám phá">
           {options.map((option, index) => (
@@ -36,7 +37,7 @@ export function TravelQuestion({ topic, value, onChange, onContinue, onBack, dir
               {selected === option ? <TravelChoiceCircle>{option}</TravelChoiceCircle> : <span className="travel-choice__text">{option}</span>}
             </button>
           ))}
-          {customOpen ? (
+          {allowCustomAnswer && customOpen ? (
             <label className="travel-choice travel-choice--custom is-selected">
               <span className="travel-choice__code">06</span>
               <TravelChoiceCircle className="travel-choice__custom-input" debounceValue={selected}>
@@ -50,7 +51,7 @@ export function TravelQuestion({ topic, value, onChange, onContinue, onBack, dir
                 />
               </TravelChoiceCircle>
             </label>
-          ) : (
+          ) : allowCustomAnswer ? (
             <button
               type="button"
               className="travel-choice travel-choice--add"
@@ -63,7 +64,7 @@ export function TravelQuestion({ topic, value, onChange, onContinue, onBack, dir
               <span>Viết điểm đến khác</span>
               <Plus size={17} aria-hidden="true" />
             </button>
-          )}
+          ) : null}
         </div>
         {onBack ? (
           <button type="button" className="topic-continue" onClick={onBack}>

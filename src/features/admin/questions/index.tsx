@@ -10,6 +10,7 @@ import {
   useDeleteAdminQuestionAnswer,
   useUpdateAdminQuestion,
   useUpdateAdminQuestionAnswer,
+  useUploadAdminQuestionAnswerImage,
 } from '@/hooks/admin'
 import type { AdminQuestion, AdminQuestionAnswer } from '@/types/admin-question.types'
 
@@ -27,7 +28,9 @@ function createDraftAnswer(question: AdminQuestion): AdminQuestionAnswer {
     code: `${question.code}_A${sortOrder}`,
     content: '',
     value: '',
+    promptHint: null,
     imageUrl: null,
+    imageKey: null,
     sortOrder,
   }
 }
@@ -38,6 +41,7 @@ export function AdminQuestionsFeature() {
   const createAnswer = useCreateAdminQuestionAnswer()
   const deleteAnswer = useDeleteAdminQuestionAnswer()
   const updateAnswer = useUpdateAdminQuestionAnswer()
+  const uploadImage = useUploadAdminQuestionAnswerImage()
   const apiQuestions = useMemo(
     () => flattenQuestions(questionsQuery.data),
     [questionsQuery.data],
@@ -101,6 +105,20 @@ export function AdminQuestionsFeature() {
     }
   }
 
+  const handleImageUpload = async (answer: AdminQuestionAnswer, file: File) => {
+    if (!currentQuestion) return
+    const uploaded = await uploadImage.mutateAsync({
+      questionId: currentQuestion.id,
+      answerId: answer.id,
+      file,
+    })
+    handleAnswerChange({
+      ...answer,
+      imageUrl: uploaded.publicUrl,
+      imageKey: uploaded.objectKey,
+    })
+  }
+
   const handleSave = async () => {
     if (!currentQuestion || !savedQuestion) return
 
@@ -127,6 +145,7 @@ export function AdminQuestionsFeature() {
               code: answer.code,
               content: answer.content,
               value: answer.value || answer.content,
+              promptHint: answer.promptHint,
               imageUrl: answer.imageUrl,
               sortOrder: answer.sortOrder,
             },
@@ -136,7 +155,9 @@ export function AdminQuestionsFeature() {
 
         const answerChanged = answer.content !== previous.content
           || answer.value !== previous.value
+          || answer.promptHint !== previous.promptHint
           || answer.imageUrl !== previous.imageUrl
+          || answer.imageKey !== previous.imageKey
           || answer.sortOrder !== previous.sortOrder
 
         if (answerChanged) {
@@ -146,7 +167,9 @@ export function AdminQuestionsFeature() {
             body: {
               content: answer.content,
               value: answer.value,
+              promptHint: answer.promptHint,
               imageUrl: answer.imageUrl,
+              imageKey: answer.imageKey,
               sortOrder: answer.sortOrder,
             },
           })
@@ -165,6 +188,7 @@ export function AdminQuestionsFeature() {
     || createAnswer.isPending
     || updateAnswer.isPending
     || deleteAnswer.isPending
+    || uploadImage.isPending
 
   if (questionsQuery.isPending) {
     return <section className="cms-questions-page cms-admin-auth-state cms-glass"><p>Đang tải câu hỏi...</p></section>
@@ -191,6 +215,8 @@ export function AdminQuestionsFeature() {
             onAnswerChange={handleAnswerChange}
             onAnswerDelete={handleAnswerDelete}
             onAddAnswer={handleAddAnswer}
+            onImageUpload={handleImageUpload}
+            uploadingAnswerId={uploadImage.variables?.answerId}
           />
         </div>
         <nav className="cms-question-navigation" aria-label="Điều hướng câu hỏi">

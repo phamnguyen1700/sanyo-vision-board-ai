@@ -8,11 +8,11 @@ import { CareerQuestion, LearningQuestion, RelationshipsQuestion, TravelQuestion
 import { ManifestFlow } from './manifest'
 import { useJourneyResults } from './hooks'
 import { JourneyTransitionController, useJourneyGestures, useScreenJourney } from './shared'
-import { useJourneyQuestions } from '@/hooks/journey'
-import { fallbackJourneyQuestions } from './questions/fake-data'
+import { useGeneratePlayerImage, useJourneyQuestions, useManifestPlayer, usePlayerResult } from '@/hooks/journey'
 import { createEmptySession, identitySchema, readSession, saveSession, type Identity, type Session } from '@/lib/vision-session'
 import { highlightedVibe, type ManifestPhase, type TopicAnswer, topics } from '@/lib/vision-topics'
 import { getJourneyRoute, getResumeScreen, isTopicAnswerValid, journeyScenes, reverseDirection, type JourneyScene, type JourneyScreenId, type TopicId } from '@/lib/journey-flow'
+import type { PlayerImageGenerationStatus, PlayerManifestRequest, PlayerResponse } from '@/types/player.types'
 
 type JourneyProps = {
   scenes?: readonly JourneyScene[]
@@ -20,7 +20,14 @@ type JourneyProps = {
   enableGestures?: boolean
 }
 
-const emptyIdentity: Identity = { name: '', gender: '', phone: '' }
+const emptyIdentity: Identity = {
+  name: '',
+  gender: '',
+  phone: '',
+  privacyConsent: false,
+  marketingConsent: false,
+  dataUsageConsent: false,
+}
 export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enableGestures = true }: JourneyProps) {
   const route = useMemo(() => getJourneyRoute(scenes), [scenes])
   const topicScenes = useMemo(() => route.filter((scene) => scene.topicId), [route])
@@ -32,20 +39,26 @@ export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enab
   const [session, setSession] = useState<Session | null>(null)
   const [editing, setEditing] = useState(false)
   const [manifestPhase, setManifestPhase] = useState<ManifestPhase>('idle')
+  const [manifestResult, setManifestResult] = useState<PlayerResponse | null>(null)
   const journeyQuestionsQuery = useJourneyQuestions()
-  const journeyResults = useJourneyResults(session?.answers)
+  const manifestPlayer = useManifestPlayer()
+  const generatePlayerImage = useGeneratePlayerImage()
+  const playerResultQuery = usePlayerResult(session?.playerId)
+  const [customImageStatuses, setCustomImageStatuses] = useState<Record<string, PlayerImageGenerationStatus>>({})
   const { activeId, move, goTo, settle, isTransitioning } = useScreenJourney()
   const activeScene = route.find((scene) => scene.id === activeId)!
   const busy = isTransitioning || manifestPhase === 'loading' || manifestPhase === 'transitioning'
-  const complete = Boolean(session && identitySchema.safeParse(session.identity).success &&
-    topicScenes.every((scene) => isTopicAnswerValid(scene.topicId!, session.answers[scene.topicId!])))
-  const journeyQuestions = journeyQuestionsQuery.data?.items?.length
-    ? journeyQuestionsQuery.data
-    : fallbackJourneyQuestions
-  const questionsByCode = useMemo(
-    () => new Map(journeyQuestions.items.map((question) => [question.code, question])),
+  const journeyQuestions = journeyQuestionsQuery.data
+  const orderedQuestions = useMemo(
+    () => [...(journeyQuestions?.items ?? [])].sort((left, right) => left.sortOrder - right.sortOrder),
     [journeyQuestions],
   )
+  const journeyResults = useJourneyResults(session?.answers, orderedQuestions)
+  const complete = Boolean(session && identitySchema.safeParse(session.identity).success &&
+    topicScenes.every((scene) => {
+      const index = topicScenes.findIndex((item) => item.id === scene.id)
+      return isTopicAnswerValid(scene.topicId!, session.answers[scene.topicId!]) && Boolean(orderedQuestions[index])
+    }))
 
   useEffect(() => {
     if (initialized.current) return
@@ -129,7 +142,73 @@ export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enab
   const manifest = () => {
     if (busy || manifestLock.current || !complete) return
     manifestLock.current = true
-    setManifestPhase('transitioning')
+    if (!session) {
+      manifestLock.current = false
+      return
+    }
+
+    const questionCodeByTopic = Object.fromEntries(
+      topicScenes.map((scene, index) => [scene.topicId, orderedQuestions[index]?.code]),
+    ) as Partial<Record<TopicId, string | undefined>>
+    const answers: PlayerManifestRequest['answers'] = topicScenes.map((scene) => {
+      const answer = session.answers[scene.topicId!]
+      const questionCode = questionCodeByTopic[scene.topicId!]
+      const question = orderedQuestions.find((item) => item.code === questionCode)
+      const values = typeof answer === 'string'
+        ? (answer ? [answer] : [])
+        : Array.isArray(answer)
+          ? answer
+          : [answer?.destination].filter((value): value is string => Boolean(value))
+      const matchedAnswers = values.map((value) => question?.answers.find(
+        (candidate) => candidate.value === value || candidate.content === value,
+      ))
+      const customText = values.find((_, index) => !matchedAnswers[index])
+      const mappedValues = values.map((value, index) => matchedAnswers[index]?.value ?? value)
+      return questionCode ? {
+        questionCode,
+        values: mappedValues,
+        ...(customText ? { customText } : {}),
+      } : null
+    }).filter((item): item is NonNullable<typeof item> => item !== null)
+
+    setManifestPhase('loading')
+    manifestPlayer.mutate({
+      name: session.identity.name,
+      gender: session.identity.gender,
+      phone: session.identity.phone,
+      marketingConsent: session.identity.marketingConsent,
+      dataUsageConsent: session.identity.dataUsageConsent,
+      answers,
+    }, {
+      onSuccess: (player) => {
+        setManifestResult(player)
+        setSession((current) => current ? { ...current, playerId: player.id } : current)
+        const pending = player.answers.filter((answer) => (
+          Boolean(answer.customText) && !player.images.some((image) => image.questionCode === answer.questionCode)
+        ))
+        setCustomImageStatuses(Object.fromEntries(pending.map((answer) => [answer.questionCode, 'loading'])))
+        void Promise.allSettled(pending.map(async (answer) => {
+          try {
+            const image = await generatePlayerImage.mutateAsync({
+              playerId: player.id,
+              questionCode: answer.questionCode,
+            })
+            setManifestResult((current) => current ? {
+              ...current,
+              images: [...current.images.filter((item) => item.questionCode !== image.questionCode), image],
+            } : current)
+            setCustomImageStatuses((current) => ({ ...current, [answer.questionCode]: 'loaded' }))
+          } catch {
+            setCustomImageStatuses((current) => ({ ...current, [answer.questionCode]: 'error' }))
+          }
+        }))
+        setManifestPhase('transitioning')
+      },
+      onError: () => {
+        manifestLock.current = false
+        setManifestPhase('error')
+      },
+    })
   }
 
   const revealComplete = useCallback(() => {
@@ -142,6 +221,7 @@ export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enab
     if (busy || !goTo('home', 'down')) return
     setEditing(false)
     setManifestPhase('idle')
+    setManifestResult(null)
     restarting.current = true
   }
 
@@ -163,7 +243,7 @@ export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enab
     const scene = route.find((item) => item.id === id)!
     const topic = topics.find((item) => item.id === scene.topicId)
     const index = topicScenes.findIndex((item) => item.id === id)
-    const question = index >= 0 ? questionsByCode.get(`Q${index + 1}`) : undefined
+    const question = index >= 0 ? orderedQuestions[index] : undefined
     return (
       <>
         {id === 'review' && session ? (
@@ -179,6 +259,8 @@ export function Journey({ scenes = journeyScenes, transitionDuration = 0.8, enab
               onReplay={replay}
               onBackToReview={backToReview}
               onTransitionComplete={revealComplete}
+              player={manifestResult ?? playerResultQuery.data ?? null}
+            imageStatusByQuestionCode={customImageStatuses}
             />
           </div>
         ) : <div className="journey-screen__scroll">

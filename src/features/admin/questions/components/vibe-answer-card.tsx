@@ -8,15 +8,20 @@ import type { AdminQuestionAnswer } from '@/types/admin-question.types'
 interface VibeAnswerCardProps {
   answer: AdminQuestionAnswer
   onChange: (answer: AdminQuestionAnswer) => void
+  onImageUpload: (file: File) => Promise<void>
+  isUploading?: boolean
 }
 
-export function VibeAnswerCard({ answer, onChange }: VibeAnswerCardProps) {
+export function VibeAnswerCard({ answer, onChange, onImageUpload, isUploading = false }: VibeAnswerCardProps) {
   return (
     <article className="cms-vibe-answer-card">
       <ImageUploadOverlay
         imageUrl={answer.imageUrl}
         alt={answer.content}
-        onChange={(imageUrl) => onChange({ ...answer, imageUrl })}
+        allowRemove={false}
+        isUploading={isUploading}
+        onFileSelected={onImageUpload}
+        onChange={(imageUrl) => onChange({ ...answer, imageUrl, imageKey: null })}
       />
       <div className="cms-vibe-answer-card__fields">
         <CmsField
@@ -32,6 +37,13 @@ export function VibeAnswerCard({ answer, onChange }: VibeAnswerCardProps) {
           value={answer.value}
           showPlaceholder={false}
           onChange={(value) => onChange({ ...answer, value })}
+        />
+        <CmsField
+          id={`vibe-prompt-hint-${answer.id}`}
+          label="Prompt hint"
+          value={answer.promptHint ?? ''}
+          showPlaceholder={false}
+          onChange={(promptHint) => onChange({ ...answer, promptHint: promptHint || null })}
         />
       </div>
     </article>

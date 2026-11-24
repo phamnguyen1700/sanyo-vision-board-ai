@@ -36,7 +36,9 @@ export function CmsField({
   }
 
   return (
-    <div className={`cms-common-field ${editable ? 'cms-common-field--editable' : 'cms-common-field--readonly'}`}>
+    <div
+      className={`cms-common-field cms-common-field--${variant} ${editable ? 'cms-common-field--editable' : 'cms-common-field--readonly'}`}
+    >
       {showLabel ? <label htmlFor={editable ? id : undefined}>{label}</label> : null}
       {editable ? (
         <Input

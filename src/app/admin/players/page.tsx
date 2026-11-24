@@ -1,3 +1,5 @@
+import { AdminPlayersFeature } from '@/features/admin/players'
+
 export default function AdminPlayersPage() {
-  return <section className="cms-admin-page" />
+  return <AdminPlayersFeature />
 }

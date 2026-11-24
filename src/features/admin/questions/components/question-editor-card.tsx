@@ -18,6 +18,8 @@ interface QuestionEditorCardProps {
   onAnswerChange: (answer: AdminQuestionAnswer) => void
   onAnswerDelete: (answer: AdminQuestionAnswer) => void | Promise<void>
   onAddAnswer: () => void
+  onImageUpload: (answer: AdminQuestionAnswer, file: File) => Promise<void>
+  uploadingAnswerId?: string
 }
 
 export function QuestionEditorCard({
@@ -29,6 +31,8 @@ export function QuestionEditorCard({
   onAnswerChange,
   onAnswerDelete,
   onAddAnswer,
+  onImageUpload,
+  uploadingAnswerId,
 }: QuestionEditorCardProps) {
   return (
     <div className="cms-question-editor-card" data-question-type={question.type}>
@@ -59,6 +63,8 @@ export function QuestionEditorCard({
               key={answer.id}
               answer={answer}
               onChange={onAnswerChange}
+              onImageUpload={(file) => onImageUpload(answer, file)}
+              isUploading={uploadingAnswerId === answer.id}
             />
           ) : (
             <ChoiceAnswerCard

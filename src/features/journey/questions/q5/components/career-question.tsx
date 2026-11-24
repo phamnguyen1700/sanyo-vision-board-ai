@@ -13,6 +13,7 @@ type CareerQuestionProps = TopicSectionProps & {
 export function CareerQuestion({ topic, index, value, onChange, onContinue, onBack, direction, editing, options, question }: CareerQuestionProps) {
   const selected = typeof value === 'string' ? value : ''
   const [customOpen, setCustomOpen] = useState(() => selected.length > 0 && !options.includes(selected))
+  const allowCustomAnswer = question?.allowCustomAnswer ?? true
   const valid = isTopicAnswerValid(topic.id, value)
 
   return (
@@ -20,7 +21,7 @@ export function CareerQuestion({ topic, index, value, onChange, onContinue, onBa
       <div className="topic__number">0{index + 1}</div>
       <div className="topic__copy">
         <span className="kicker">{String(index + 1).padStart(2, '0')} · {topic.eyebrow.split(' · ')[1]}</span>
-        <h3>{question?.content ?? topic.title}</h3>
+        <h3>{question?.content}</h3>
         <p>{topic.desc}</p>
         <div className="learning-choice-sheet career-choice-sheet" role="group" aria-label="Thành tựu muốn đạt được">
           {options.map((option) => (
@@ -29,17 +30,17 @@ export function CareerQuestion({ topic, index, value, onChange, onContinue, onBa
               <span className="learning-choice__text">{option}</span>
             </button>
           ))}
-          {customOpen ? (
+          {allowCustomAnswer && customOpen ? (
             <label className="learning-choice learning-choice--custom is-selected">
               <span className="career-choice__dot" aria-hidden="true" />
               <CareerChoiceInput value={selected} onChange={onChange} />
             </label>
-          ) : (
+          ) : allowCustomAnswer ? (
             <button type="button" className="learning-choice learning-choice--add" onClick={() => { setCustomOpen(true); onChange('') }}>
               <Plus size={18} aria-hidden="true" />
               <span>Viết thêm</span>
             </button>
-          )}
+          ) : null}
         </div>
         {onBack ? (
           <button type="button" className="topic-continue" onClick={onBack}>

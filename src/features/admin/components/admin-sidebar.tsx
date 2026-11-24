@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CircleHelp, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react'
+import { CircleHelp, Images, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react'
 
 import {
   Sidebar,
@@ -23,6 +23,7 @@ const navigationItems = [
   { label: 'Người chơi', href: '/admin/players', icon: Users },
   { label: 'Quản trị viên', href: '/admin/staff', icon: ShieldCheck },
   { label: 'Câu hỏi', href: '/admin/questions', icon: CircleHelp },
+  { label: 'Image Pool', href: '/admin/image-pool', icon: Images },
   { label: 'Cài đặt', href: '/admin/settings', icon: Settings },
 ] as const
 

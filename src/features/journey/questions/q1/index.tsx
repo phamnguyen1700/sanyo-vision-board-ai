@@ -8,7 +8,7 @@ export function VibeQuestion(props: TopicSectionProps) {
     id: answer.code,
     value: answer.value,
     tag: answer.content,
-    imageSrc: answer.imageUrl ?? '/vibe-image.png',
+    imageSrc: answer.imageUrl ?? '',
   }))
 
   return <VibeQuestionComponent {...props} cards={cards} />
