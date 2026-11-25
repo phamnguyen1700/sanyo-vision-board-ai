@@ -26,6 +26,7 @@ export const endpoints = {
     fillStop: '/admin/image-pool/fill/stop',
     fillStatus: '/admin/image-pool/fill/status',
     fillSummary: '/admin/image-pool/fill/summary',
+    fillResume: (runId: string) => `/admin/image-pool/fill/runs/${runId}/resume`,
   },
   journey: {
     questions: '/journey/questions',

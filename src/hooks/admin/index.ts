@@ -3,6 +3,7 @@ export {
   useAdminImagePoolFillStatus,
   useAdminImagePoolFillSummary,
   useAdminImagePoolStats,
+  useResumeAdminImagePoolFill,
   useStartAdminImagePoolFill,
   useStopAdminImagePoolFill,
 } from './use-admin-image-pool'

@@ -14,6 +14,7 @@ import {
   useAdminImagePoolFillStatus,
   useAdminImagePoolFillSummary,
   useAdminImagePoolStats,
+  useResumeAdminImagePoolFill,
   useStartAdminImagePoolFill,
   useStopAdminImagePoolFill,
 } from '@/hooks/admin'
@@ -46,6 +47,7 @@ export function AdminImagePoolFeature() {
   const fillSummaryQuery = useAdminImagePoolFillSummary(!isProcessing)
   const startFill = useStartAdminImagePoolFill()
   const stopFill = useStopAdminImagePoolFill()
+  const resumeFill = useResumeAdminImagePoolFill()
   const [showCompletion, setShowCompletion] = useState(false)
   const wasProcessingRef = useRef(false)
   const completionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -93,6 +95,7 @@ export function AdminImagePoolFeature() {
         progress: `${latestRun.totalImages} ảnh`,
         totalRequests: String(latestRun.totalRequests),
         totalFailed: String(latestRun.totalFailed),
+        canResume: latestRun.canResume,
         startedAt: formatRunDate(latestRun.startedAt),
         finishedAt: formatRunDate(latestRun.finishedAt),
         duration: latestRun.finishedAt
@@ -145,7 +148,16 @@ export function AdminImagePoolFeature() {
           {statsQuery.isLoading || fillSummaryQuery.isLoading ? (
             <ImagePoolFillRunSkeleton />
           ) : (
-            <ImagePoolFillRunCard run={latestRunPreview} />
+            <ImagePoolFillRunCard
+              run={latestRunPreview}
+              isResuming={resumeFill.isPending}
+              onResume={() => {
+                if (!latestRun?.canResume) return
+                resumeFill.mutate(latestRun.id, {
+                  onError: () => cmsToast.server('Không thể resume các ảnh bị lỗi.'),
+                })
+              }}
+            />
           )}
         </section>
       ) : null}

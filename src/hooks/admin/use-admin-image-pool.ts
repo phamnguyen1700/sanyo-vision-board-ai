@@ -55,3 +55,16 @@ export function useStopAdminImagePoolFill() {
     },
   })
 }
+
+export function useResumeAdminImagePoolFill() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: string) => adminImagePoolService.resumeFill(runId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.admin.imagePool.fillStatus(), data)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillStatus() })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillSummary() })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.stats() })
+    },
+  })
+}

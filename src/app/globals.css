@@ -4075,6 +4075,23 @@ body:has(.cms-theme.dark) {
   margin: 0;
 }
 
+.cms-image-pool-fill-run-card__resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--cms-glass-radius);
+  background: color-mix(in srgb, var(--cms-overlay-color) 68%, transparent);
+}
+
+.cms-image-pool-fill-run-card__resume-label {
+  color: var(--cms-text-body);
+  font-size: var(--cms-text-body);
+  font-weight: var(--cms-text-weight);
+}
+
 .cms-image-pool-fill-run-card__metrics,
 .cms-image-pool-fill-run-card__timing {
   display: grid;

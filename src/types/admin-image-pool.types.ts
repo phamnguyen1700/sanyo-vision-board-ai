@@ -11,6 +11,9 @@ export interface PoolFillRunResponse {
   totalImages: number
   totalFailed: number
   totalRequests: number
+  canResume: boolean
+  errorCode: string | null
+  errorMessage: string | null
   startedAt: string
   finishedAt: string | null
 }

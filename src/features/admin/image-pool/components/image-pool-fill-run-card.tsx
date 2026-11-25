@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CmsField } from '@/components/common/cms-field'
+import { Switch } from '@/components/ui/switch'
 
 export interface ImagePoolFillRunPreview {
   status: string
@@ -9,13 +10,16 @@ export interface ImagePoolFillRunPreview {
   startedAt: string
   finishedAt: string
   duration: string
+  canResume: boolean
 }
 
 interface ImagePoolFillRunCardProps {
   run: ImagePoolFillRunPreview | null
+  isResuming: boolean
+  onResume: () => void
 }
 
-export function ImagePoolFillRunCard({ run }: ImagePoolFillRunCardProps) {
+export function ImagePoolFillRunCard({ run, isResuming, onResume }: ImagePoolFillRunCardProps) {
   return (
     <Card className="cms-image-pool-fill-run-card">
       <CardHeader>
@@ -24,6 +28,19 @@ export function ImagePoolFillRunCard({ run }: ImagePoolFillRunCardProps) {
       <CardContent>
         {run ? (
           <div className="cms-image-pool-fill-run-card__list">
+            <div className="cms-image-pool-fill-run-card__resume">
+              <span className="cms-image-pool-fill-run-card__resume-label">
+                Resume ảnh lỗi
+              </span>
+              <Switch
+                checked={run.canResume}
+                disabled={!run.canResume || isResuming}
+                onCheckedChange={(checked) => {
+                  if (checked) onResume()
+                }}
+                aria-label="Resume các ảnh bị lỗi"
+              />
+            </div>
             <div className="cms-image-pool-fill-run-card__metrics">
               <CmsField id="image-pool-run-status" label="Trạng thái" value={run.status} variant="line" editable={false} showPlaceholder={false} />
               <CmsField id="image-pool-run-progress" label="Tổng ảnh đã nạp" value={run.progress} variant="line" editable={false} showPlaceholder={false} />

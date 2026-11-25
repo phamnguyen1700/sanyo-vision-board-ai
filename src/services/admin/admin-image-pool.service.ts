@@ -36,4 +36,10 @@ export const adminImagePoolService = {
     )
     return response.data
   },
+  resumeFill: async (runId: string) => {
+    const response = await apiClient.post<PoolFillRunResponse>(
+      endpoints.imagePool.fillResume(runId),
+    )
+    return response.data
+  },
 }
