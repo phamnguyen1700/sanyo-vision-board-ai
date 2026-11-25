@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CmsField } from '@/components/common/cms-field'
+import { LoadingSuccessOverlay } from '@/components/common/loading-success-overlay'
 import { Switch } from '@/components/ui/switch'
 
 export interface ImagePoolFillRunPreview {
@@ -57,6 +58,11 @@ export function ImagePoolFillRunCard({ run, isResuming, onResume }: ImagePoolFil
           <p className="cms-image-pool-fill-run-card__empty">Chưa có lần chạy nào.</p>
         )}
       </CardContent>
+      <LoadingSuccessOverlay
+        visible={isResuming}
+        status="loading"
+        label="Đang resume các ảnh bị lỗi"
+      />
     </Card>
   )
 }

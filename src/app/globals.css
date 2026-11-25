@@ -4067,6 +4067,8 @@ body:has(.cms-theme.dark) {
 .cms-image-pool-fill-run-card {
   min-width: 0;
   margin: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .cms-image-pool-fill-run-card__list {
