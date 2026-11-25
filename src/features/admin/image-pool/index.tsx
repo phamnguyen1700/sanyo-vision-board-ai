@@ -118,6 +118,7 @@ export function AdminImagePoolFeature() {
               disabled={
                 startFill.isPending ||
                 stopFill.isPending ||
+                resumeFill.isPending ||
                 fillStatusQuery.isLoading ||
                 fillStatusQuery.data?.status === 'stopping'
               }
