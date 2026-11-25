@@ -33,7 +33,7 @@ export function ImagePoolFillRunCard({ run, isResuming, onResume }: ImagePoolFil
                 Resume ảnh lỗi
               </span>
               <Switch
-                checked={run.canResume}
+                checked={isResuming}
                 disabled={!run.canResume || isResuming}
                 onCheckedChange={(checked) => {
                   if (checked) onResume()
