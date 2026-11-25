@@ -43,12 +43,17 @@ export const cmsToast = {
       ? Number((error as { status?: number }).status)
       : 0
 
-    if (status >= 500 || status === 429) {
+    if (status === 0 || status >= 500 || status === 429) {
       cmsToast.server(message)
       return
     }
 
-    cmsToast.validation(message)
+    if (status === 400 || status === 409 || status === 422) {
+      cmsToast.validation(message)
+      return
+    }
+
+    cmsToast.server(message)
   },
 }
 

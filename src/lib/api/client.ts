@@ -7,7 +7,6 @@ import { queryKeys } from '@/lib/query/query-keys'
 
 import { normalizeApiError } from './errors'
 import { ADMIN_SESSION_EXPIRED_EVENT } from './admin-auth-events'
-import { cmsToast } from '@/components/common/cms-toast'
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
@@ -46,10 +45,6 @@ apiClient.interceptors.response.use(
           detail: { message: normalizedError.message || 'Phiên đăng nhập đã hết hạn.' },
         }))
       }
-    }
-
-    if (status >= 500 || status === 429) {
-      cmsToast.server(normalizedError.message || 'Máy chủ đang gặp sự cố.')
     }
 
     return Promise.reject(normalizedError)

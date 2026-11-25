@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { cmsToast } from '@/components/common/cms-toast'
 import { adminImagePoolService } from '@/services/admin'
 import { queryKeys } from '@/lib/query/query-keys'
 
@@ -40,6 +41,7 @@ export function useStartAdminImagePoolFill() {
       queryClient.setQueryData(queryKeys.admin.imagePool.fillStatus(), data)
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillStatus() })
     },
+    onError: cmsToast.apiError,
   })
 }
 
@@ -53,6 +55,7 @@ export function useStopAdminImagePoolFill() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillSummary() })
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.stats() })
     },
+    onError: cmsToast.apiError,
   })
 }
 
@@ -66,5 +69,6 @@ export function useResumeAdminImagePoolFill() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillSummary() })
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.stats() })
     },
+    onError: cmsToast.apiError,
   })
 }

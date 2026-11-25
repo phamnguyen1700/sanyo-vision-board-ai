@@ -65,6 +65,9 @@ export function AdminImagePoolFeature() {
     if (wasProcessingRef.current && status && terminalStatuses.includes(status)) {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.stats() })
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.imagePool.fillSummary() })
+      if (status === 'failed' && fillStatusQuery.data?.errorMessage) {
+        cmsToast.server(fillStatusQuery.data.errorMessage)
+      }
       setShowCompletion(true)
       completionTimerRef.current = setTimeout(() => setShowCompletion(false), 700)
     }
@@ -74,17 +77,13 @@ export function AdminImagePoolFeature() {
 
   const handleFillToggle = (enabled: boolean) => {
     if (enabled) {
-      startFill.mutate(undefined, {
-        onError: () => cmsToast.server('Không thể bắt đầu tiến trình nạp image pool.'),
-      })
+      startFill.mutate(undefined)
       return
     }
 
     if (isProcessing) {
       cmsToast.success('Chart sẽ cập nhật sau khi tiến trình hoàn tất.')
-      stopFill.mutate(undefined, {
-        onError: () => cmsToast.server('Không thể dừng tiến trình nạp image pool.'),
-      })
+      stopFill.mutate(undefined)
     }
   }
 
@@ -153,9 +152,7 @@ export function AdminImagePoolFeature() {
               isResuming={resumeFill.isPending}
               onResume={() => {
                 if (!latestRun?.canResume) return
-                resumeFill.mutate(latestRun.id, {
-                  onError: () => cmsToast.server('Không thể resume các ảnh bị lỗi.'),
-                })
+                resumeFill.mutate(latestRun.id)
               }}
             />
           )}
